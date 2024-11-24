@@ -1,4 +1,4 @@
-# 4Bit-Up-Down-Asynchronous-Reset-Counter-Synthesis
+# 4.  4Bit-Up-Down-Asynchronous-Reset-Counter-Synthesis
 
 ## Aim:
 
@@ -62,14 +62,73 @@ used.
 • The tool used for Synthesis is “Genus”. Hence, type “genus -gui” to open the tool.
 
 • Genus Script file with .tcl file Extension commands are executed one by one to synthesize the netlist.
+### counter.v
+```
+`timescale 1ns / 1 ns
+module counter(clk,m,rst,count);
+input clk,m,rst;
+output reg [3:0] count;
+always@(posedge clk or negedge rst)
+begin
+if (!rst)
+count=0;
+else if(m)
+count=count+1;
+else
+count=count-1;
+end
+endmodule
+```
+### run.tcl
+```
+read_libs /cadence/install/FOUNDRY-01/digital/90nm/dig/lib/slow.lib
+read_hdl counter.v
+elaborate
+read_sdc input_constraints.sdc 
 
-#### Synthesis RTL Schematic :
+syn_generic
+report_area
+syn_map
+report_area
+syn_opt
+report_area 
+
+report_area > counter_area.txt
+report_power > counter_power.txt
+report_timing > counter_timing.txt
+report_area > counter_cell.txt
+report_gates > counter_gates.txt
+
+write_hdl > counter_netlist.v
+write_sdc > output_constraints.sdc 
+
+gui_show
+```
+### sdc
+```
+create_clock -name clk -period 2 -waveform {0 1} [get_ports "clk"]
+set_clock_transition -rise 0.1 [get_clocks "clk"]
+set_clock_transition -fall 0.1 [get_clocks "clk"]
+set_clock_uncertainty 0.01 [get_ports "clk"]
+set_input_delay -max 0.8 [get_ports "rst"] -clock [get_clocks "clk"]
+set_output_delay -max 0.8 [get_ports "count"] -clock [get_clocks "clk"]
+```
+
+### Synthesis RTL Schematic :
+![Screenshot 2024-11-24 182239](https://github.com/user-attachments/assets/6bd331b1-7da3-466e-ad5c-5f294bcf087a)
+
 
 #### Area report:
+![Screenshot 2024-11-24 182304](https://github.com/user-attachments/assets/6ea9ccb6-a945-4981-a2a6-a980f4718423)
+
 
 #### Power Report:
+![Screenshot 2024-11-24 182323](https://github.com/user-attachments/assets/395baff2-399e-4552-afb6-06a11fd5c3d0)
+
 
 #### Timing Report: 
+![Screenshot 2024-11-24 182444](https://github.com/user-attachments/assets/109e565d-7e56-4aca-ad82-1321ae3bf850)
+
 
 #### Result: 
 
